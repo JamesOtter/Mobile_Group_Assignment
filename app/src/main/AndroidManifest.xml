@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.mobile_group_assignment">
+    xmlns:tools="http://schemas.android.com/tools" >
+
 
     <application
         android:allowBackup="true"
@@ -17,9 +17,20 @@
             android:name="com.google.android.actions"
             android:resource="@drawable/circular_background" />
         <!-- Main launcher activity -->
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TravelAgencyActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
