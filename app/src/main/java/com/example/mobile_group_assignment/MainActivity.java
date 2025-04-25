@@ -19,17 +19,17 @@ public class MainActivity extends AppCompatActivity {
         // Initialize Firebase
         FirebaseApp.initializeApp(this);
 
-//        Button btnTravelPlaces = findViewById(R.id.btnTravelPlaces);
-//        btnTravelPlaces.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Navigate to TravelPlacesActivity
-//                Intent intent = new Intent(MainActivity.this, MainAgency.class);
-//                startActivity(intent);
-//
-//                // Optional: Add animation
-//                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-//            }
-//        });
+        Button btnTravelPlaces = findViewById(R.id.btnTravelPlaces);
+        btnTravelPlaces.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to TravelPlacesActivity
+                Intent intent = new Intent(MainActivity.this, PlacesListActivity.class);
+                startActivity(intent);
+
+                // Optional: Add animation
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+        });
     }
 }
