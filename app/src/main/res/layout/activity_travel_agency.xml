@@ -17,11 +17,11 @@
         android:gravity="center">
 
         <TextView
-            android:id="@+id/home_title"
+            android:id="@+id/create_plan_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="24sp"
-            android:text="Home" />
+            android:text="Create Plan" />
 
     </LinearLayout>
 
