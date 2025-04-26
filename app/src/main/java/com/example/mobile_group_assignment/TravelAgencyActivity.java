@@ -15,7 +15,7 @@ public class TravelAgencyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_travel_agency);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_create_plan); // Highlight profile
+        bottomNavigationView.setSelectedItemId(R.id.nav_create_place);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -23,6 +23,9 @@ public class TravelAgencyActivity extends AppCompatActivity {
                 startActivity(new Intent(TravelAgencyActivity.this, MainActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_plan) {
+                startActivity(new Intent(TravelAgencyActivity.this, CreatePlanActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_create_place) {
                 return true;
             } else if (itemId == R.id.nav_profile) {
                 startActivity(new Intent(TravelAgencyActivity.this, ProfileActivity.class));
