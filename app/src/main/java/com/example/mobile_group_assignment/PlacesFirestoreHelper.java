@@ -6,6 +6,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class PlacesFirestoreHelper {
     private final FirebaseFirestore db;
@@ -65,9 +67,23 @@ public class PlacesFirestoreHelper {
     }
 
     // Method to delete a place
-    public void deletePlace(String placeId, final FirestoreCallback callback) {
+    public void deletePlace(String placeId, String imageUrl, final FirestoreCallback callback) {
         placesCollection.document(placeId)
                 .delete()
+                .addOnSuccessListener(unused -> {
+                    // If successful and has image, delete from Storage
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        deleteImageFromStorage(imageUrl, callback);
+                    } else {
+                        callback.onSuccess();
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    private void deleteImageFromStorage(String imageUrl, FirestoreCallback callback) {
+        StorageReference photoRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl);
+        photoRef.delete()
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }

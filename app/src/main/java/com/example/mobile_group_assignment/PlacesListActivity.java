@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.Query;
@@ -24,6 +25,26 @@ public class PlacesListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_places_list);
+
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_create_place);
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_create_plan) {
+                startActivity(new Intent(this, CreatePlanActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_create_place) {
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            }
+            return false;
+        });
 
         // Initialize views
         placesRecyclerView = findViewById(R.id.placesRecyclerView);
@@ -71,8 +92,14 @@ public class PlacesListActivity extends AppCompatActivity {
                 })
                 .build();
 
-        adapter = new PlacesAdapter(options, this);
-        placesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new PlacesAdapter(options, PlacesListActivity.this);
+        placesRecyclerView.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean supportsPredictiveItemAnimations() {
+                return false;
+            }
+        });
+        placesRecyclerView.setHasFixedSize(true);
         placesRecyclerView.setAdapter(adapter);
 
         // Show empty state if no places exists
@@ -100,6 +127,16 @@ public class PlacesListActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         if (adapter != null) {
+            adapter.startListening();
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // Reset the adapter when returning from edit/create
+        if (adapter != null) {
+            adapter.stopListening();
             adapter.startListening();
         }
     }

@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     } else if (itemId == R.id.nav_create_place) {
                         if (currentUser != null) {
-                            startActivity(new Intent(MainActivity.this, TravelAgencyActivity.class));
+                            startActivity(new Intent(MainActivity.this, PlacesListActivity.class));
                         } else {
                             Toast.makeText(MainActivity.this, "Please login to access this feature", Toast.LENGTH_SHORT).show();
                         }

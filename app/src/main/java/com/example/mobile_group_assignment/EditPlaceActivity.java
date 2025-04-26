@@ -30,7 +30,7 @@ public class EditPlaceActivity extends AppCompatActivity {
     private EditText nameEditText, visitationTimeEditText, durationEditText,
             costEditText, descriptionEditText;
     private Spinner typeSpinner, locationSpinner;
-    private ImageView placeImageView;
+    private ImageView placeImageView, backButton;
     private Button saveButton, uploadImageButton;
 
     private PlacesFirestoreHelper placesHelper;
@@ -45,8 +45,13 @@ public class EditPlaceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_place);
 
+
+
         // Initialize views
         initializeViews();
+
+        //back button
+        backButton.setOnClickListener(v -> onBackPressed());
 
         // Initialize Firestore and Image helper
         placesHelper = new PlacesFirestoreHelper();
@@ -63,6 +68,7 @@ public class EditPlaceActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
+        backButton = findViewById(R.id.backButton);
         nameEditText = findViewById(R.id.nameEditText);
         visitationTimeEditText = findViewById(R.id.visitationTimeEditText);
         durationEditText = findViewById(R.id.durationEditText);
@@ -265,9 +271,13 @@ public class EditPlaceActivity extends AppCompatActivity {
             placesHelper.addPlace(newPlace, new PlacesFirestoreHelper.FirestoreCallback() {
                 @Override
                 public void onSuccess() {
-                    progressDialog.dismiss();
-                    Toast.makeText(EditPlaceActivity.this, "Place created successfully", Toast.LENGTH_SHORT).show();
-                    finish();
+                    runOnUiThread(() -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(EditPlaceActivity.this,
+                                "Place created successfully",
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
                 }
 
                 @Override
