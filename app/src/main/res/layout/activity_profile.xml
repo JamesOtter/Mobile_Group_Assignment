@@ -134,10 +134,30 @@
             android:padding="24dp">
 
             <Button
+                android:id="@+id/btnViewPlans"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="View My Plans"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/blue_900"
+                style="@style/Widget.MaterialComponents.Button" />
+
+            <Button
+                android:id="@+id/btnViewPlaces"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="View My Places"
+                android:layout_marginTop="8dp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/blue_900"
+                style="@style/Widget.MaterialComponents.Button" />
+
+            <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="LOGOUT"
+                android:layout_marginTop="8dp"
                 android:textColor="@android:color/white"
                 android:backgroundTint="@color/red"
                 style="@style/Widget.MaterialComponents.Button"/>

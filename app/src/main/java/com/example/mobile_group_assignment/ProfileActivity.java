@@ -24,7 +24,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private TextInputEditText editEmail, editPassword;
-    private Button btnLogin, btnLogout, btnGoToRegister;
+    private Button btnLogin, btnLogout, btnGoToRegister, btnViewPlans, btnViewPlaces;
     private TextView txtStatus, txtWelcome, txtLoggedIn;
     private BottomNavigationView bottomNavigationView;
     private MaterialCardView loginCard, profileCard;
@@ -46,6 +46,8 @@ public class ProfileActivity extends AppCompatActivity {
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        btnViewPlans = findViewById(R.id.btnViewPlans);
+        btnViewPlaces = findViewById(R.id.btnViewPlaces);
         btnLogout = findViewById(R.id.btnLogout);
         btnGoToRegister = findViewById(R.id.btnGoToRegister);
         txtStatus = findViewById(R.id.txtStatus);
@@ -68,7 +70,7 @@ public class ProfileActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_create_place) {
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 if (currentUser != null) {
-                    startActivity(new Intent(this, TravelAgencyActivity.class));
+                    startActivity(new Intent(this, PlacesListActivity.class));
                 } else {
                     Toast.makeText(this, "Please login to access Create Place", Toast.LENGTH_SHORT).show();
                 }
@@ -95,7 +97,14 @@ public class ProfileActivity extends AppCompatActivity {
                     .show();
         });
         btnGoToRegister.setOnClickListener(v -> {
-            startActivity(new Intent(ProfileActivity.this, RegisterActivity.class));
+            startActivity(new Intent(this, RegisterActivity.class));
+        });
+        btnViewPlans.setOnClickListener(v -> {
+            startActivity(new Intent(this, CreatePlanActivity.class));
+        });
+
+        btnViewPlaces.setOnClickListener(v -> {
+            startActivity(new Intent(this, PlacesListActivity.class));
         });
     }
 
