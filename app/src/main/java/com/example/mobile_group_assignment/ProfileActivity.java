@@ -19,19 +19,15 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
     private TextInputEditText editEmail, editPassword;
     private Button btnLogin, btnLogout, btnGoToRegister;
     private TextView txtStatus, txtWelcome;
     private BottomNavigationView bottomNavigationView;
     private MaterialCardView loginCard, profileCard;
-    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +35,6 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
 
         initializeViews();
         setupUIElements();
@@ -85,23 +80,29 @@ public class ProfileActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
+
             if (itemId == R.id.nav_home) {
                 startActivity(new Intent(ProfileActivity.this, MainActivity.class));
                 finish();
                 return true;
-            } else if (itemId == R.id.nav_create_plan) {
-                if (isAdmin) {
+            } else if (itemId == R.id.nav_create_place) {
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                if (currentUser != null) {
                     startActivity(new Intent(ProfileActivity.this, TravelAgencyActivity.class));
                 } else {
-                    Toast.makeText(this, "Admin access required", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please login to access Create Place", Toast.LENGTH_SHORT).show();
                 }
                 return true;
             } else if (itemId == R.id.nav_profile) {
+                return true;
+            } else if (itemId == R.id.nav_create_plan) {
+                startActivity(new Intent(ProfileActivity.this, CreatePlanActivity.class));
                 return true;
             }
             return false;
         });
     }
+
 
     private void setupButtonListeners() {
         btnLogin.setOnClickListener(v -> loginUser());
@@ -113,36 +114,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void checkUserStatus() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            updateUI(null);
-            updateNavigationMenu(false);
-            return;
-        }
-
-        db.collection("Users").document(currentUser.getUid())
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            String isUser = document.getString("isUser");
-                            isAdmin = !"1".equals(isUser);
-                        } else {
-                            isAdmin = false;
-                        }
-                    } else {
-                        isAdmin = false;
-                        Toast.makeText(this, "Error checking user status", Toast.LENGTH_SHORT).show();
-                    }
-                    updateUI(currentUser);
-                    updateNavigationMenu(isAdmin);
-                });
-    }
-
-    private void updateNavigationMenu(boolean isAdmin) {
-        Menu menu = bottomNavigationView.getMenu();
-        MenuItem createPlanItem = menu.findItem(R.id.nav_create_plan);
-        createPlanItem.setVisible(isAdmin);
+        updateUI(currentUser);
     }
 
     private void loginUser() {
@@ -175,22 +147,25 @@ public class ProfileActivity extends AppCompatActivity {
     private void logoutUser() {
         mAuth.signOut();
         updateUI(null);
-        updateNavigationMenu(false);
         Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
     }
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             txtWelcome.setText("Welcome Back!");
+            txtWelcome.setTextColor(ContextCompat.getColor(this, R.color.white));
             txtStatus.setText("Logged in as: " + user.getEmail());
+            txtStatus.setTextColor(ContextCompat.getColor(this, R.color.white));
             btnLogout.setVisibility(View.VISIBLE);
             btnLogin.setVisibility(View.GONE);
             btnGoToRegister.setVisibility(View.GONE);
             loginCard.setVisibility(View.GONE);
             profileCard.setVisibility(View.VISIBLE);
         } else {
-            txtWelcome.setText("Welcome to Travel Planner");
+            txtWelcome.setText("Welcome To Travel Plan!");
+            txtWelcome.setTextColor(ContextCompat.getColor(this, R.color.white));
             txtStatus.setText("Please login or register");
+            txtStatus.setTextColor(ContextCompat.getColor(this, R.color.white));
             btnLogout.setVisibility(View.GONE);
             btnLogin.setVisibility(View.VISIBLE);
             btnGoToRegister.setVisibility(View.VISIBLE);

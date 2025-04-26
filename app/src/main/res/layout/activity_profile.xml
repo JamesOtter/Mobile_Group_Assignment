@@ -18,8 +18,8 @@
             android:id="@+id/txtWelcome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Welcome to Travel Planner"
-            android:textColor="@android:color/white"
+            android:text="Welcome to Travel Explorer!"
+            android:textColor="@color/white"
             android:textSize="24sp"
             android:textStyle="bold"
             android:gravity="center"/>
@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Please login or register"
-            android:textColor="@android:color/white"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:gravity="center"
             android:layout_marginTop="8dp"/>
@@ -97,7 +97,7 @@
                 android:text="CREATE NEW ACCOUNT"
                 android:layout_marginTop="8dp"
                 android:textColor="@android:color/white"
-                android:backgroundTint="@color/blue_700"
+                android:backgroundTint="@color/blue_500"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -139,5 +139,6 @@
         android:background="@color/blue_500"
         app:itemIconTint="@drawable/bottom_nav_colors"
         app:itemTextColor="@drawable/bottom_nav_colors"
-        app:menu="@menu/bottom_nav_menu" />
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"/>
 </RelativeLayout>

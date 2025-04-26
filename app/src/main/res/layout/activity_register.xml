@@ -16,8 +16,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create Account"
-            android:textColor="@android:color/white"
+            android:text="Create New Account"
+            android:textColor="@color/white"
             android:textSize="24sp"
             android:textStyle="bold"
             android:gravity="center"/>
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Join us today"
-            android:textColor="@android:color/white"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:gravity="center"
             android:layout_marginTop="8dp"/>
@@ -121,5 +121,6 @@
         android:background="@color/blue_500"
         app:itemIconTint="@drawable/bottom_nav_colors"
         app:itemTextColor="@drawable/bottom_nav_colors"
-        app:menu="@menu/bottom_nav_menu" />
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"/>
 </RelativeLayout>
