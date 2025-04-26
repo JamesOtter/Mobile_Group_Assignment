@@ -20,15 +20,15 @@ public class TravelAgencyActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                startActivity(new Intent(TravelAgencyActivity.this, MainActivity.class));
+                startActivity(new Intent(this, MainActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_plan) {
-                startActivity(new Intent(TravelAgencyActivity.this, CreatePlanActivity.class));
+                startActivity(new Intent(this, CreatePlanActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_place) {
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                startActivity(new Intent(TravelAgencyActivity.this, ProfileActivity.class));
+                startActivity(new Intent(this, ProfileActivity.class));
                 return true;
             }
             return false;
