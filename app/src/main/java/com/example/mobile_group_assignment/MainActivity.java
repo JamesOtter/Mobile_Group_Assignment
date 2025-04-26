@@ -3,6 +3,7 @@ package com.example.mobile_group_assignment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,8 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
     private FirebaseAuth mAuth;
+
+    Button placesListButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     } else if (itemId == R.id.nav_create_place) {
                         if (currentUser != null) {
-                            startActivity(new Intent(MainActivity.this, TravelAgencyActivity.class));
+                            startActivity(new Intent(MainActivity.this, PlacesListActivity.class));
                         } else {
                             Toast.makeText(MainActivity.this, "Please login to access this feature", Toast.LENGTH_SHORT).show();
                         }
