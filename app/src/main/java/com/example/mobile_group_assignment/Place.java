@@ -1,7 +1,9 @@
 package com.example.mobile_group_assignment;
 
+import com.google.firebase.firestore.Exclude;
+
 public class Place {
-    private String id;
+    private String documentId;
     private String name;
     private String photoUrl;
     private String type;
@@ -15,9 +17,13 @@ public class Place {
     // Empty constructor needed for Firestore
     public Place() {}
 
-    public Place(String id, String name, String photoUrl, String type, String visitationTime,
+    @Exclude
+    public String getDocumentId() { return documentId; }
+
+    public void setDocumentId(String documentId) { this.documentId = documentId; }
+
+    public Place(String name, String photoUrl, String type, String visitationTime,
                  String location, int duration, double cost, String description, String createdBy) {
-        this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.type = type;
@@ -30,8 +36,6 @@ public class Place {
     }
 
     // Getters and setters for all fields
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getPhotoUrl() { return photoUrl; }

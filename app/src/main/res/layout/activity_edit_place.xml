@@ -1,9 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0F1A3B"
+    android:padding="16dp"
     tools:context=".EditPlaceActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Place Image -->
+        <ImageView
+            android:id="@+id/placeImageView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder_image"
+            android:contentDescription="Place image"
+            android:background="#1A2A5B"/>
+
+        <Button
+            android:id="@+id/uploadImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Upload Image"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Place Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Place Name"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/nameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textColorHint="#80FFFFFF"
+            android:hint="Enter place name"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Place Type -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Type"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/typeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Visitation Time -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Visitation Time"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/visitationTimeEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textColorHint="#80FFFFFF"
+            android:hint="e.g., Morning, Afternoon, Evening"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Location (State) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location (State)"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/locationSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Duration -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Duration (minutes)"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/durationEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textColor="@android:color/white"
+            android:textColorHint="#80FFFFFF"
+            android:hint="Enter duration in minutes"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Cost -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estimated Cost (RM)"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/costEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textColor="@android:color/white"
+            android:textColorHint="#80FFFFFF"
+            android:hint="Enter estimated cost"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"/>
+
+        <EditText
+            android:id="@+id/descriptionEditText"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:textColor="@android:color/white"
+            android:textColorHint="#80FFFFFF"
+            android:hint="Enter description"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Save Place"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#1E88E5"/>
+
+    </LinearLayout>
+</ScrollView>

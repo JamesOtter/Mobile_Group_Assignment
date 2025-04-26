@@ -1,5 +1,6 @@
 package com.example.mobile_group_assignment;
 
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -30,15 +31,34 @@ public class PlacesFirestoreHelper {
     public void addPlace(Place place, final FirestoreCallback callback) {
         placesCollection.add(place)
                 .addOnSuccessListener(documentReference -> {
-                    place.setId(documentReference.getId());
                     callback.onSuccess();
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // Method to get place data by id
+    public void getPlaceById(String placeId, PlaceCallback callback) {
+        placesCollection.document(placeId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Place place = documentSnapshot.toObject(Place.class);
+                        if (place != null) {
+                            place.setDocumentId(documentSnapshot.getId());
+                            callback.onSuccess(place);
+                        } else {
+                            callback.onFailure(new Exception("Failed to parse place data"));
+                        }
+                    } else {
+                        callback.onFailure(new Exception("Place not found"));
+                    }
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
     // Method to update a place
     public void updatePlace(Place place, final FirestoreCallback callback) {
-        placesCollection.document(place.getId())
+        placesCollection.document(place.getDocumentId())
                 .set(place)
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
@@ -52,9 +72,27 @@ public class PlacesFirestoreHelper {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public FirestoreRecyclerOptions<Place> getPlacesOptions() {
+        Query query = getPlacesByUser();
+        if (query == null) return null;
+
+        return new FirestoreRecyclerOptions.Builder<Place>()
+                .setQuery(query, snapshot -> {
+                    Place place = snapshot.toObject(Place.class);
+                    place.setDocumentId(snapshot.getId()); // Set document ID
+                    return place;
+                })
+                .build();
+    }
+
     // Interface for callback
     public interface FirestoreCallback {
         void onSuccess();
+        void onFailure(Exception e);
+    }
+
+    public interface PlaceCallback {
+        void onSuccess(Place place);
         void onFailure(Exception e);
     }
 }

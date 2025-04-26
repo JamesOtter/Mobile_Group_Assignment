@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -17,6 +18,7 @@ public class PlacesListActivity extends AppCompatActivity {
     private RecyclerView placesRecyclerView;
     private TextView emptyStateText;
     private PlacesAdapter adapter;
+    private static final String TAG = "PlacesListActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +28,9 @@ public class PlacesListActivity extends AppCompatActivity {
         // Initialize views
         placesRecyclerView = findViewById(R.id.placesRecyclerView);
         emptyStateText = findViewById(R.id.emptyStateText);
-        findViewById(R.id.createPlaceButton).setOnClickListener(v -> openCreatePlaceActivity());
+        findViewById(R.id.createPlaceButton).setOnClickListener(v -> {
+            startActivity(new Intent(this, EditPlaceActivity.class));
+        });
 
         // Initialize Firestore helper
         placesHelper = new PlacesFirestoreHelper();
@@ -59,15 +63,25 @@ public class PlacesListActivity extends AppCompatActivity {
         }
 
         FirestoreRecyclerOptions<Place> options = new FirestoreRecyclerOptions.Builder<Place>()
-                .setQuery(query, Place.class)
+                .setQuery(query, snapshot -> {
+                    // Convert snapshot to Place object and set documentId
+                    Place place = snapshot.toObject(Place.class);
+                    place.setDocumentId(snapshot.getId());
+                    return place;
+                })
                 .build();
 
-        adapter = new PlacesAdapter(options);
+        adapter = new PlacesAdapter(options, this);
         placesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         placesRecyclerView.setAdapter(adapter);
 
-        // Show empty state if no places exist
+        // Show empty state if no places exists
         query.addSnapshotListener((value, error) -> {
+            if (error != null) {
+                Log.w(TAG, "Listen failed.", error);
+                return;
+            }
+
             if (value != null && value.isEmpty()) {
                 emptyStateText.setText("No places found for this account");
                 emptyStateText.setVisibility(View.VISIBLE);

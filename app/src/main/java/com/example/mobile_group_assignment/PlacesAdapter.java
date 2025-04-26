@@ -1,5 +1,7 @@
 package com.example.mobile_group_assignment;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +15,10 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.squareup.picasso.Picasso;
 
 public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter.PlaceViewHolder> {
-    public PlacesAdapter(@NonNull FirestoreRecyclerOptions<Place> options) {
+    private final Context context;
+    public PlacesAdapter(@NonNull FirestoreRecyclerOptions<Place> options, Context context) {
         super(options);
+        this.context = context;
     }
 
     @Override
@@ -29,7 +33,9 @@ public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter
         }
 
         holder.editButton.setOnClickListener(v -> {
-            // We'll implement edit functionality later
+            Intent intent = new Intent(context, EditPlaceActivity.class);
+            intent.putExtra("PLACE_ID", model.getDocumentId()); // Pass the Firestore document ID
+            context.startActivity(intent);
         });
     }
 
