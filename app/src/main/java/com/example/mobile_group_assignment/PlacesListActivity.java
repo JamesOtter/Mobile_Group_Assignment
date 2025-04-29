@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.Query;
@@ -25,6 +27,14 @@ public class PlacesListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_places_list);
+
+
+        Initialize views
+        placesRecyclerView = findViewById(R.id.placesRecyclerView);
+        emptyStateText = findViewById(R.id.emptyStateText);
+        findViewById(R.id.createPlaceButton).setOnClickListener(v -> {
+            startActivity(new Intent(this, EditPlaceActivity.class));
+        });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_create_place);
@@ -92,6 +102,13 @@ public class PlacesListActivity extends AppCompatActivity {
                 })
                 .build();
 
+
+        adapter = new PlacesAdapter(options, this);
+        placesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        placesRecyclerView.setAdapter(adapter);
+
+        // Show empty state if no places exist
+
         adapter = new PlacesAdapter(options, PlacesListActivity.this);
         placesRecyclerView.setLayoutManager(new LinearLayoutManager(this) {
             @Override
@@ -103,6 +120,7 @@ public class PlacesListActivity extends AppCompatActivity {
         placesRecyclerView.setAdapter(adapter);
 
         // Show empty state if no places exists
+
         query.addSnapshotListener((value, error) -> {
             if (error != null) {
                 Log.w(TAG, "Listen failed.", error);
@@ -118,10 +136,17 @@ public class PlacesListActivity extends AppCompatActivity {
         });
     }
 
+
     private void openCreatePlaceActivity() {
         // We'll implement this in the next step
         startActivity(new Intent(this, EditPlaceActivity.class));
     }
+
+    private void openCreatePlaceActivity() {
+        // We'll implement this in the next step
+        startActivity(new Intent(this, EditPlaceActivity.class));
+    }
+
 
     @Override
     protected void onStart() {
@@ -132,6 +157,7 @@ public class PlacesListActivity extends AppCompatActivity {
     }
 
     @Override
+
     protected void onRestart() {
         super.onRestart();
         // Reset the adapter when returning from edit/create
@@ -142,6 +168,7 @@ public class PlacesListActivity extends AppCompatActivity {
     }
 
     @Override
+
     protected void onStop() {
         super.onStop();
         if (adapter != null) {
