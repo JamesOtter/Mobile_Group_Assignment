@@ -1,5 +1,0 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#FF6200EE"/> <!-- Background color of the circle, you can change it -->
-
-    <corners android:radius="30dp"/>  <!-- Controls the roundness of the corners -->
-</shape>

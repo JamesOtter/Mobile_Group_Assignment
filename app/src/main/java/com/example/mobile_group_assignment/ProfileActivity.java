@@ -24,8 +24,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private TextInputEditText editEmail, editPassword;
-    private Button btnLogin, btnLogout, btnGoToRegister, btnViewPlans, btnViewPlaces;
-    private TextView txtStatus, txtWelcome, txtLoggedIn;
+    private Button btnLogin, btnLogout, btnGoToRegister;
+    private TextView txtStatus, txtWelcome;
     private BottomNavigationView bottomNavigationView;
     private MaterialCardView loginCard, profileCard;
 
@@ -37,6 +37,7 @@ public class ProfileActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         initializeViews();
+        setupUIElements();
         setupNavigation();
         setupButtonListeners();
         checkUserStatus();
@@ -46,16 +47,33 @@ public class ProfileActivity extends AppCompatActivity {
         editEmail = findViewById(R.id.editEmail);
         editPassword = findViewById(R.id.editPassword);
         btnLogin = findViewById(R.id.btnLogin);
-        btnViewPlans = findViewById(R.id.btnViewPlans);
-        btnViewPlaces = findViewById(R.id.btnViewPlaces);
         btnLogout = findViewById(R.id.btnLogout);
         btnGoToRegister = findViewById(R.id.btnGoToRegister);
         txtStatus = findViewById(R.id.txtStatus);
-        txtLoggedIn = findViewById(R.id.txtLoggedIn);
         txtWelcome = findViewById(R.id.txtWelcome);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         loginCard = findViewById(R.id.loginCard);
         profileCard = findViewById(R.id.profileCard);
+    }
+
+    private void setupUIElements() {
+        // Set blue theme colors
+        int primaryColor = ContextCompat.getColor(this, R.color.blue_500);
+        int primaryDarkColor = ContextCompat.getColor(this, R.color.blue_700);
+
+        // Style the buttons
+        btnLogin.setBackgroundColor(primaryColor);
+        btnLogout.setBackgroundColor(primaryDarkColor);
+        btnGoToRegister.setBackgroundColor(primaryDarkColor);
+
+        // Style the cards
+        loginCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.blue_50));
+        profileCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.blue_50));
+
+        // Style the text
+        txtWelcome.setTextColor(primaryDarkColor);
+        txtWelcome.setTypeface(null, Typeface.BOLD);
+        txtStatus.setTextColor(primaryDarkColor);
     }
 
     private void setupNavigation() {
@@ -64,13 +82,13 @@ public class ProfileActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(new Intent(ProfileActivity.this, MainActivity.class));
                 finish();
                 return true;
             } else if (itemId == R.id.nav_create_place) {
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 if (currentUser != null) {
-                    startActivity(new Intent(this, PlacesListActivity.class));
+                    startActivity(new Intent(ProfileActivity.this, TravelAgencyActivity.class));
                 } else {
                     Toast.makeText(this, "Please login to access Create Place", Toast.LENGTH_SHORT).show();
                 }
@@ -78,7 +96,7 @@ public class ProfileActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_profile) {
                 return true;
             } else if (itemId == R.id.nav_create_plan) {
-                startActivity(new Intent(this, CreatePlanActivity.class));
+                startActivity(new Intent(ProfileActivity.this, CreatePlanActivity.class));
                 return true;
             }
             return false;
@@ -88,23 +106,9 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setupButtonListeners() {
         btnLogin.setOnClickListener(v -> loginUser());
-        btnLogout.setOnClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Confirm Logout")
-                    .setMessage("Are you sure you want to logout?")
-                    .setPositiveButton("Yes", (dialog, which) -> logoutUser())
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        btnLogout.setOnClickListener(v -> logoutUser());
         btnGoToRegister.setOnClickListener(v -> {
-            startActivity(new Intent(this, RegisterActivity.class));
-        });
-        btnViewPlans.setOnClickListener(v -> {
-            startActivity(new Intent(this, CreatePlanActivity.class));
-        });
-
-        btnViewPlaces.setOnClickListener(v -> {
-            startActivity(new Intent(this, PlacesListActivity.class));
+            startActivity(new Intent(ProfileActivity.this, RegisterActivity.class));
         });
     }
 
@@ -150,14 +154,18 @@ public class ProfileActivity extends AppCompatActivity {
         if (user != null) {
             txtWelcome.setText("Welcome Back!");
             txtWelcome.setTextColor(ContextCompat.getColor(this, R.color.white));
-            txtLoggedIn.setText("You're logged in as: " + user.getEmail());
-            txtLoggedIn.setTextColor(ContextCompat.getColor(this, R.color.black));
+            txtStatus.setText("Logged in as: " + user.getEmail());
+            txtStatus.setTextColor(ContextCompat.getColor(this, R.color.white));
             btnLogout.setVisibility(View.VISIBLE);
             btnLogin.setVisibility(View.GONE);
             btnGoToRegister.setVisibility(View.GONE);
             loginCard.setVisibility(View.GONE);
             profileCard.setVisibility(View.VISIBLE);
         } else {
+            txtWelcome.setText("Welcome To Travel Plan!");
+            txtWelcome.setTextColor(ContextCompat.getColor(this, R.color.white));
+            txtStatus.setText("Please login or register");
+            txtStatus.setTextColor(ContextCompat.getColor(this, R.color.white));
             btnLogout.setVisibility(View.GONE);
             btnLogin.setVisibility(View.VISIBLE);
             btnGoToRegister.setVisibility(View.VISIBLE);
