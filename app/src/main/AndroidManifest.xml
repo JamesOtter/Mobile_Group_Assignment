@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-
-    xmlns:tools="http://schemas.android.com/tools" >
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-
-
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -19,11 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mobile_group_assignment"
         tools:targetApi="31">
-
-        <meta-data
-            android:name="com.google.android.actions"
-            android:resource="@drawable/circular_background" />
-
+        
         <activity
             android:name=".SplashActivity"
             android:exported="true" >
@@ -41,7 +30,6 @@
         <activity
             android:name=".CreatePlanActivity"
             android:exported="false" />
-
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
@@ -51,24 +39,10 @@
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
-
         <activity
             android:name=".MainActivity"
-
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:exported="false">
         </activity>
-        <activity android:name=".SeeTravelPlanActivity" />
-        <activity android:name=".TravelPlanCreatorActivity" />
-        <activity android:name=".TravelPlanDetailActivity" />
-        <activity android:name=".ManageTravelPlanActivity" />
-
-
-
     </application>
 
 </manifest>

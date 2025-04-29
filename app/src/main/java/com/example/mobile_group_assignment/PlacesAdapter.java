@@ -2,23 +2,17 @@ package com.example.mobile_group_assignment;
 
 import android.content.Context;
 import android.content.Intent;
-
 import android.util.Log;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-
 import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -26,17 +20,11 @@ import com.squareup.picasso.Picasso;
 
 public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter.PlaceViewHolder> {
     private final Context context;
-
-    public PlacesAdapter(@NonNull FirestoreRecyclerOptions<Place> options, Context context) {
-        super(options);
-        this.context = context;
-
     private final PlacesFirestoreHelper placesHelper;
     public PlacesAdapter(@NonNull FirestoreRecyclerOptions<Place> options, Context context) {
         super(options);
         this.context = context;
         this.placesHelper = new PlacesFirestoreHelper();
-
     }
 
     @Override
@@ -50,13 +38,6 @@ public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter
             Picasso.get().load(model.getPhotoUrl()).into(holder.placeImage);
         }
 
-
-        holder.editButton.setOnClickListener(v -> {
-            Intent intent = new Intent(context, EditPlaceActivity.class);
-            intent.putExtra("PLACE_ID", model.getDocumentId()); // Pass the Firestore document ID
-            context.startActivity(intent);
-        });
-
         holder.editButton.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditPlaceActivity.class);
             intent.putExtra("PLACE_ID", model.getDocumentId()); // Pass the Firestore document ID
@@ -68,7 +49,6 @@ public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter
                     model.getDocumentId(),
                     model.getPhotoUrl());
         });
-
     }
 
     @NonNull
@@ -78,12 +58,6 @@ public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter
                 .inflate(R.layout.item_place, parent, false);
         return new PlaceViewHolder(view);
     }
-
-
-    static class PlaceViewHolder extends RecyclerView.ViewHolder {
-        TextView nameText, locationText, typeText;
-        ImageView placeImage;
-        Button editButton;
 
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -104,7 +78,6 @@ public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter
             typeText = itemView.findViewById(R.id.placeType);
             placeImage = itemView.findViewById(R.id.placeImage);
             editButton = itemView.findViewById(R.id.editButton);
-
             deleteButton = itemView.findViewById(R.id.deleteButton);
         }
     }
@@ -137,7 +110,6 @@ public class PlacesAdapter extends FirestoreRecyclerAdapter<Place, PlacesAdapter
         } else {
             Toast.makeText(context, "Error: Helper not initialized", Toast.LENGTH_SHORT).show();
             Log.e("PlacesAdapter", "placesHelper is null");
-
         }
     }
 }
