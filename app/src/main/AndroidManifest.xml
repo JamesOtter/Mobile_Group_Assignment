@@ -12,7 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mobile_group_assignment"
         tools:targetApi="31">
-        
+
+
+
+
         <activity
             android:name=".SplashActivity"
             android:exported="true" >
@@ -43,6 +46,12 @@
             android:name=".MainActivity"
             android:exported="false">
         </activity>
+
+        <activity android:name=".SeeTravelPlanActivity" />
+        <activity android:name=".TravelPlanCreatorActivity" />
+        <activity android:name=".ManageTravelPlanActivity" />
+        <activity android:name=".TravelPlanDetailActivity" />
+
     </application>
 
 </manifest>

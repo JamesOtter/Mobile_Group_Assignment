@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_main);
 
+
         mAuth = FirebaseAuth.getInstance();
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
                     if (itemId == R.id.nav_home) {
                         return true;
                     } else if (itemId == R.id.nav_create_plan) {
-                        startActivity(new Intent(MainActivity.this, CreatePlanActivity.class));
+                        startActivity(new Intent(MainActivity.this, SeeTravelPlanActivity.class));
                         return true;
                     } else if (itemId == R.id.nav_create_place) {
                         if (currentUser != null) {
