@@ -38,6 +38,13 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        Button seeTravelButton = findViewById(R.id.seetravelbutton);
+        seeTravelButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SeeTravelPlanActivity.class);
+            startActivity(intent);
+        });
+
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(navListener);
 

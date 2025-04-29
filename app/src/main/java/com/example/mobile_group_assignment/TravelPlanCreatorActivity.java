@@ -1,170 +1,164 @@
 package com.example.mobile_group_assignment;
 
 import android.app.DatePickerDialog;
-import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import java.text.SimpleDateFormat;
-import java.util.*;
+
+import java.util.Calendar;
 
 public class TravelPlanCreatorActivity extends AppCompatActivity {
 
-    private LinearLayout destinationLayout;
-    private TextView startDateText, endDateText;
-    private SeekBar budgetSeekBar;
-    private Spinner categorySpinner;
-    private LinearLayout attractionsLayout;
-    private Button savePlanBtn;
+    private RadioGroup stateRadioGroup, budgetRadioGroup;
+    private Button  btnNext;
 
-    private String selectedDestination = "";
+    private ImageButton btnStartDate,btnEndDate;
+    private TextView tvStartDate, tvEndDate, tvAttractions;
+    private CheckBox cbNature, cbFood, cbShopping, cbCulture, cbAdventure;
+    private Spinner locationSpinner;
+
+    private String selectedState = "";
+    private String selectedBudget = "";
     private String startDate = "";
     private String endDate = "";
-    private int budget = 1000;
-    private String category = "";
-    private List<String> selectedAttractions = new ArrayList<>();
-
-    private String[] destinations = {"Kuala Lumpur", "Langkawi", "Penang"};
-    private int[] destinationImages = {R.drawable.kl, R.drawable.langkawi, R.drawable.penang};
-
-    private Map<String, String[]> attractionMap = new HashMap<String, String[]>() {{
-        put("Kuala Lumpur", new String[]{"Petronas Towers", "KL Tower", "Batu Caves"});
-        put("Langkawi", new String[]{"Eagle Square", "Sky Bridge", "Underwater World"});
-        put("Penang", new String[]{"George Town", "Kek Lok Si", "Penang Hill"});
-    }};
+    private StringBuilder selectedCategories = new StringBuilder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ScrollView scrollView = new ScrollView(this);
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        scrollView.addView(layout);
-        setContentView(scrollView);
+        setContentView(R.layout.activity_travel_plan_creator);
 
-        destinationLayout = new LinearLayout(this);
-        destinationLayout.setOrientation(LinearLayout.HORIZONTAL);
-        layout.addView(destinationLayout);
-        setupDestinations();
+        // Initialize views
+        locationSpinner = findViewById(R.id.locationSpinner);
+        setupSpinners();
+        setSpinnerSelection(locationSpinner, R.array.malaysia_states);
 
-        startDateText = new TextView(this);
-        startDateText.setText("Start Date: Not set");
-        startDateText.setOnClickListener(v -> pickDate(startDateText, true));
-        layout.addView(startDateText);
+        // Date selection
+        tvStartDate = findViewById(R.id.tv_start_date);
+        tvEndDate = findViewById(R.id.tv_end_date);
+        btnStartDate = findViewById(R.id.btn_start_date);
+        btnEndDate = findViewById(R.id.btn_end_date);
 
-        endDateText = new TextView(this);
-        endDateText.setText("End Date: Not set");
-        endDateText.setOnClickListener(v -> pickDate(endDateText, false));
-        layout.addView(endDateText);
+        // Budget selection
+        budgetRadioGroup = findViewById(R.id.budget_radio_group);
 
-        budgetSeekBar = new SeekBar(this);
-        budgetSeekBar.setMax(5000);
-        budgetSeekBar.setProgress(1000);
-        layout.addView(budgetSeekBar);
-        TextView budgetLabel = new TextView(this);
-        budgetLabel.setText("Budget: RM1000");
-        layout.addView(budgetLabel);
-        budgetSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        // Travel categories
+        cbNature = findViewById(R.id.cb_nature);
+        cbFood = findViewById(R.id.cb_food);
+        cbShopping = findViewById(R.id.cb_shopping);
+        cbCulture = findViewById(R.id.cb_culture);
+        cbAdventure = findViewById(R.id.cb_adventure);
+
+        // Final button
+        btnNext = findViewById(R.id.btn_next);
+
+        // Set up listeners
+        btnStartDate.setOnClickListener(v -> showDatePickerDialog(tvStartDate, true));
+        btnEndDate.setOnClickListener(v -> showDatePickerDialog(tvEndDate, false));
+        btnNext.setOnClickListener(v -> saveTravelPlan());
+
+        // Add the listener for location spinner
+        locationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                budget = progress;
-                budgetLabel.setText("Budget: RM" + progress);
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                // Get the selected state
+                selectedState = parentView.getItemAtPosition(position).toString();
+                // Log to verify if the state is updated correctly
+                Log.d("SelectedState", selectedState);
             }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Optional: Handle when nothing is selected (if needed)
+            }
         });
-
-        categorySpinner = new Spinner(this);
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Nature", "Food", "Shopping", "Culture"});
-        categorySpinner.setAdapter(spinnerAdapter);
-        layout.addView(categorySpinner);
-
-        attractionsLayout = new LinearLayout(this);
-        attractionsLayout.setOrientation(LinearLayout.VERTICAL);
-        layout.addView(attractionsLayout);
-
-        savePlanBtn = new Button(this);
-        savePlanBtn.setText("Save Plan");
-        savePlanBtn.setOnClickListener(v -> savePlan());
-        layout.addView(savePlanBtn);
     }
 
-    private void setupDestinations() {
-        for (int i = 0; i < destinations.length; i++) {
-            ImageView img = new ImageView(this);
-            img.setImageResource(destinationImages[i]);
-            img.setLayoutParams(new LinearLayout.LayoutParams(300, 300));
-            int index = i;
-            img.setOnClickListener(v -> {
-                selectedDestination = destinations[index];
-                Toast.makeText(this, "Selected: " + selectedDestination, Toast.LENGTH_SHORT).show();
-                showAttractions(selectedDestination);
-            });
-            destinationLayout.addView(img);
-        }
+    private void setSpinnerSelection(Spinner spinner, int arrayResId) {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                arrayResId, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
     }
 
-    private void pickDate(TextView targetView, boolean isStart) {
-        Calendar calendar = Calendar.getInstance();
-        DatePickerDialog dialog = new DatePickerDialog(this,
+    private void setupSpinners() {
+        // Location spinner (Malaysian states)
+        ArrayAdapter<CharSequence> locationAdapter = ArrayAdapter.createFromResource(this,
+                R.array.malaysia_states, android.R.layout.simple_spinner_item);
+        locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        locationSpinner.setAdapter(locationAdapter);
+    }
+
+    private void showDatePickerDialog(TextView textView, boolean isStartDate) {
+        final Calendar calendar = Calendar.getInstance();
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                 (view, year, month, dayOfMonth) -> {
-                    calendar.set(year, month, dayOfMonth);
-                    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
-                    if (isStart) {
-                        startDate = date;
+                    String selected = dayOfMonth + "/" + (month + 1) + "/" + year;
+                    textView.setText(selected);
+                    if (isStartDate) {
+                        startDate = selected;
                     } else {
-                        endDate = date;
+                        endDate = selected;
                     }
-                    targetView.setText((isStart ? "Start" : "End") + " Date: " + date);
                 },
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        dialog.show();
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        datePickerDialog.show();
     }
 
-    private void showAttractions(String location) {
-        attractionsLayout.removeAllViews();
-        String[] attractions = attractionMap.get(location);
-        if (attractions != null) {
-            for (String place : attractions) {
-                CheckBox box = new CheckBox(this);
-                box.setText(place);
-                box.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    if (isChecked) selectedAttractions.add(place);
-                    else selectedAttractions.remove(place);
-                });
-                attractionsLayout.addView(box);
-            }
+    private void saveTravelPlan() {
+        // Get selected budget
+        int selectedBudgetId = budgetRadioGroup.getCheckedRadioButtonId();
+        if (selectedBudgetId != -1) {
+            RadioButton selectedBudgetRadio = findViewById(selectedBudgetId);
+            selectedBudget = selectedBudgetRadio.getText().toString();
         }
-    }
 
-    private void savePlan() {
-        category = categorySpinner.getSelectedItem().toString();
-        String notes = "Budget: RM" + budget + "\nCategory: " + category + "\nPlaces: " + String.join(", ", selectedAttractions);
-        String dateRange = startDate + " to " + endDate;
+        // Get selected categories
+        selectedCategories.setLength(0);
+        if (cbNature.isChecked()) selectedCategories.append("Nature, ");
+        if (cbFood.isChecked()) selectedCategories.append("Food, ");
+        if (cbShopping.isChecked()) selectedCategories.append("Shopping, ");
+        if (cbCulture.isChecked()) selectedCategories.append("Culture, ");
+        if (cbAdventure.isChecked()) selectedCategories.append("Adventure, ");
+        if (selectedCategories.length() > 2) {
+            selectedCategories.setLength(selectedCategories.length() - 2); // Remove last comma
+        }
 
-        TravelPlan travelPlan = new TravelPlan(selectedDestination, dateRange, notes);
+        // Validate required fields
+        if (selectedState.isEmpty() ||
+                startDate.isEmpty() ||
+                endDate.isEmpty() ||
+                selectedBudget.isEmpty() ||
+                selectedCategories.length() == 0) {
 
-        // Save in SharedPreferences as JSON
-        SharedPreferences prefs = getSharedPreferences("MyTravelPlans", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
+            // Show warning dialog
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Incomplete Travel Plan")
+                    .setMessage("Please complete all fields before proceeding.")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return; // Do not proceed if incomplete
+        }
 
-        String planString = travelPlan.getDestination() + "||" + travelPlan.getDate() + "||" + travelPlan.getNotes();
-        editor.putString("latest_plan", planString);
+        // Save to SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("TravelPlan", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("selectedState", selectedState);
+        editor.putString("startDate", startDate);
+        editor.putString("endDate", endDate);
+        editor.putString("selectedBudget", selectedBudget);
+        editor.putString("selectedCategories", selectedCategories.toString());
         editor.apply();
 
-        Toast.makeText(this, "Plan saved!", Toast.LENGTH_SHORT).show();
-
-        new android.os.Handler().postDelayed(() -> {
-            startActivity(new android.content.Intent(this, SeeTravelPlanActivity.class));
-            finish();
-        }, 1000);
+        // Proceed to next page
+        Intent intent = new Intent(this, ManageTravelPlanActivity.class);
+        startActivity(intent);
     }
-
 }

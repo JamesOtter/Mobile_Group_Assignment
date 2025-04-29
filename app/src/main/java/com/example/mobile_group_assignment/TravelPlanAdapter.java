@@ -1,50 +1,75 @@
 package com.example.mobile_group_assignment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class TravelPlanAdapter extends RecyclerView.Adapter<TravelPlanAdapter.ViewHolder> {
 
-    List<TravelPlan> planList;
+    private List<TravelPlan> planList;
+    private OnItemClickListener onItemClickListener;
 
+    // Constructor
     public TravelPlanAdapter(List<TravelPlan> planList) {
         this.planList = planList;
     }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_travel_plan, parent, false);
-        return new ViewHolder(view);
+    // Set the item click listener
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        TravelPlan plan = planList.get(position);
-        holder.textDestination.setText(plan.getDestination());
-        holder.textDate.setText(plan.getDate());
-        holder.textNotes.setText(plan.getNotes());  // Corrected
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        // Inflate the item layout for each travel plan
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_travel_plan, parent, false);
+        return new ViewHolder(view);  // Create a non-static ViewHolder
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        if (planList != null && !planList.isEmpty()) {
+            TravelPlan plan = planList.get(position);
+
+            // Log to verify the content of the list
+            Log.d("TravelPlanAdapter", "Binding plan: " + plan.getDestination());
+
+            holder.destinationTextView.setText(plan.getDestination());
+            holder.startDateTextView.setText(plan.getStartDate());
+            holder.endDateTextView.setText(plan.getEndDate());
+        }
     }
 
     @Override
     public int getItemCount() {
-        return planList.size();
+        return planList != null ? planList.size() : 0;  // Return 0 if the list is null or empty
     }
 
+    // Remove static from the ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textDestination, textDate, textNotes;
+        TextView destinationTextView, startDateTextView, endDateTextView;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
-            textDestination = itemView.findViewById(R.id.textDestination);
-            textDate = itemView.findViewById(R.id.textDate);
-            textNotes = itemView.findViewById(R.id.textNotes);
+            destinationTextView = itemView.findViewById(R.id.textViewDestination);
+            startDateTextView = itemView.findViewById(R.id.textViewStartDate);
+            endDateTextView = itemView.findViewById(R.id.textViewEndDate);
+
+            // Handle item click
+            itemView.setOnClickListener(v -> {
+                if (onItemClickListener != null) {
+                    onItemClickListener.onItemClick(getAdapterPosition());
+                }
+            });
         }
+    }
+
+    // Interface for item click listener
+    public interface OnItemClickListener {
+        void onItemClick(int position);
     }
 }
