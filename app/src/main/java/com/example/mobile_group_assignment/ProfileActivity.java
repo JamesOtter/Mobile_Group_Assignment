@@ -88,7 +88,7 @@ public class ProfileActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_create_place) {
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 if (currentUser != null) {
-                    startActivity(new Intent(ProfileActivity.this, TravelAgencyActivity.class));
+                    startActivity(new Intent(ProfileActivity.this, PlacesListActivity.class));
                 } else {
                     Toast.makeText(this, "Please login to access Create Place", Toast.LENGTH_SHORT).show();
                 }
@@ -96,7 +96,7 @@ public class ProfileActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_profile) {
                 return true;
             } else if (itemId == R.id.nav_create_plan) {
-                startActivity(new Intent(ProfileActivity.this, CreatePlanActivity.class));
+                startActivity(new Intent(ProfileActivity.this, SeeTravelPlanActivity.class));
                 return true;
             }
             return false;
