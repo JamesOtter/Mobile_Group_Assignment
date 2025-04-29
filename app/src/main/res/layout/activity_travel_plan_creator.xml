@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7FAFC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Title Card (Keep this as is) -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#ADD8E6">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create Your Travel Plan"
+                    android:textColor="#2D3748"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="80dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="#F7FAFC" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start planning your perfect journey"
+                    android:textColor="#4A5568" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Step 1: Select State -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1. Select State"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location (State)"
+            android:textColor="@android:color/black"
+            android:layout_marginTop="16dp"/>
+
+        <Spinner
+            android:id="@+id/locationSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#1E88E5"/>
+
+        <!-- Step 2: Select Dates -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2. Select Dates"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start Date: " />
+
+            <TextView
+                android:id="@+id/tv_start_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Not Selected" />
+
+            <ImageButton
+                android:id="@+id/btn_start_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_today"
+                android:contentDescription="Select Start Date"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="End Date: " />
+
+            <TextView
+                android:id="@+id/tv_end_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Not Selected" />
+
+            <ImageButton
+                android:id="@+id/btn_end_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_today"
+                android:contentDescription="Select End Date"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Step 3: Budget -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="3. Select Budget"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
+
+        <RadioGroup
+            android:id="@+id/budget_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton android:id="@+id/budget_low" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Economy (RM500 - RM1000)" />
+            <RadioButton android:id="@+id/budget_medium" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Medium (RM1001 - RM2500)" />
+            <RadioButton android:id="@+id/budget_high" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="High-End (RM2501 - RM4000)" />
+            <RadioButton android:id="@+id/budget_luxury" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Luxury (RM4000 and above)" />
+        </RadioGroup>
+
+        <!-- Step 4: Travel Type -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="4. Select Travel Type"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
+
+        <CheckBox android:id="@+id/cb_nature" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Nature Scenery" />
+        <CheckBox android:id="@+id/cb_food" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Food Experience" />
+        <CheckBox android:id="@+id/cb_shopping" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Shopping " />
+        <CheckBox android:id="@+id/cb_culture" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Cultural Historical" />
+        <CheckBox android:id="@+id/cb_adventure" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Adventure Activities" />
+
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Edit Plan"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#1E88E5"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+</ScrollView>
