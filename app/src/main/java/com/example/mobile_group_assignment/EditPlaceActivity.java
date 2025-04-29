@@ -131,7 +131,7 @@ public class EditPlaceActivity extends AppCompatActivity {
 
     private void setSpinnerSelection(Spinner spinner, int arrayResId, String value) {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                arrayResId, android.R.layout.simple_spinner_item);
+                arrayResId, R.layout.custom_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
