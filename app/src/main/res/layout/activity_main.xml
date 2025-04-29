@@ -10,10 +10,6 @@
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_navigation" >
 
-
-    </FrameLayout>
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -27,15 +23,6 @@
                 android:text="Home"
                 android:textSize="24sp" />
 
-
-        <Button
-            android:id="@+id/seetravelbutton"
-            android:layout_width="135dp"
-            android:layout_height="103dp"
-            android:text="Button" />
-
-
-
             <Button
                 android:id="@+id/listBtn"
                 android:layout_width="wrap_content"
@@ -43,8 +30,7 @@
                 android:text="Go to Places List" />
 
         </LinearLayout>
-
-
+    </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
