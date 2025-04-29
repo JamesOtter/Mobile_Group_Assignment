@@ -7,4 +7,4 @@
     android:textColor="@android:color/white"
     android:padding="8dp"
     android:ellipsize="end"
-    android:singleLine="true" />
+    android:singleLine="true"/>
