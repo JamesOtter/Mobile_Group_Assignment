@@ -45,8 +45,6 @@ public class EditPlaceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_place);
 
-
-
         // Initialize views
         initializeViews();
 
@@ -148,13 +146,13 @@ public class EditPlaceActivity extends AppCompatActivity {
     private void setupSpinners() {
         // Type spinner
         ArrayAdapter<CharSequence> typeAdapter = ArrayAdapter.createFromResource(this,
-                R.array.place_types, android.R.layout.simple_spinner_item);
+                R.array.place_types, R.layout.custom_spinner_item);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         typeSpinner.setAdapter(typeAdapter);
 
         // Location spinner (Malaysian states)
         ArrayAdapter<CharSequence> locationAdapter = ArrayAdapter.createFromResource(this,
-                R.array.malaysia_states, android.R.layout.simple_spinner_item);
+                R.array.malaysia_states, R.layout.custom_spinner_item);
         locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         locationSpinner.setAdapter(locationAdapter);
     }
