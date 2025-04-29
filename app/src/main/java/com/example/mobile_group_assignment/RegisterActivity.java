@@ -48,20 +48,20 @@ public class RegisterActivity extends AppCompatActivity {
             FirebaseUser currentUser = mAuth.getCurrentUser();
 
             if (itemId == R.id.nav_home) {
-                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                startActivity(new Intent(this, MainActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_plan) {
-                startActivity(new Intent(RegisterActivity.this, CreatePlanActivity.class));
+                startActivity(new Intent(this, CreatePlanActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_place) {
                 if (currentUser != null) {
-                    startActivity(new Intent(RegisterActivity.this, TravelAgencyActivity.class));
+                    startActivity(new Intent(this, TravelAgencyActivity.class));
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Please login to access this feature", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please login to access this feature", Toast.LENGTH_SHORT).show();
                 }
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                startActivity(new Intent(RegisterActivity.this, ProfileActivity.class));
+                startActivity(new Intent(this, ProfileActivity.class));
                 return true;
             }
             return false;
