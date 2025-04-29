@@ -45,6 +45,8 @@ public class EditPlaceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_place);
 
+
+
         // Initialize views
         initializeViews();
 
