@@ -3,9 +3,13 @@
     <string name="default_web_client_id">550358902817-sb3sdo3a50rcgtajm2p0llji46vfcfr7.apps.googleusercontent.com</string>
 
     <string-array name="place_types">
+        <item>Adventure</item>
+        <item>Cultural</item>
         <item>Nature</item>
         <item>Food</item>
         <item>Shopping</item>
+        <item>Theme Park</item>
+        <item>Relaxation</item>
     </string-array>
 
     <string-array name="malaysia_states">
