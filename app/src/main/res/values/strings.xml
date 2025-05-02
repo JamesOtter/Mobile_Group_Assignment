@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">mobile_group_assignment</string>
+    <string name="app_name">Travel Explorer</string>
     <string name="default_web_client_id">550358902817-sb3sdo3a50rcgtajm2p0llji46vfcfr7.apps.googleusercontent.com</string>
 
     <string-array name="place_types">
@@ -26,4 +26,6 @@
         <item>Labuan</item>
         <item>Putrajaya</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -1,64 +1,279 @@
 package com.example.mobile_group_assignment;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class ProfileActivity extends AppCompatActivity {
 
+    private static final int RC_SIGN_IN = 9001;
+    private LinearLayout authContainer;
+    private LinearLayout profileContainer;
+    private TabLayout authTabs;
+    private TextInputEditText etEmail, etPassword, etConfirmPassword;
+    private TextInputLayout tilConfirmPassword;
+    private MaterialButton btnAuthenticate;
+    private TextView tvUserName, tvUserEmail;
+    private ProgressBar progressBar;
+    private View logoutOption, viewPlansOption, viewPlacesOption;
+
+    // Firebase Auth
     private FirebaseAuth mAuth;
-    private TextInputEditText editEmail, editPassword;
-    private Button btnLogin, btnLogout, btnGoToRegister, btnViewPlans, btnViewPlaces;
-    private TextView txtStatus, txtWelcome, txtLoggedIn;
-    private BottomNavigationView bottomNavigationView;
-    private MaterialCardView loginCard, profileCard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        initializeViews();
+        // Initialize UI components
+        initializeUI();
+
+        // Bottom Navigation Bar setup
         setupNavigation();
-        setupButtonListeners();
-        checkUserStatus();
     }
 
-    private void initializeViews() {
-        editEmail = findViewById(R.id.editEmail);
-        editPassword = findViewById(R.id.editPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnViewPlans = findViewById(R.id.btnViewPlans);
-        btnViewPlaces = findViewById(R.id.btnViewPlaces);
-        btnLogout = findViewById(R.id.btnLogout);
-        btnGoToRegister = findViewById(R.id.btnGoToRegister);
-        txtStatus = findViewById(R.id.txtStatus);
-        txtLoggedIn = findViewById(R.id.txtLoggedIn);
-        txtWelcome = findViewById(R.id.txtWelcome);
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
-        loginCard = findViewById(R.id.loginCard);
-        profileCard = findViewById(R.id.profileCard);
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly
+        updateUI(mAuth.getCurrentUser());
+    }
+
+    private void initializeUI() {
+        // Authentication components
+        authContainer = findViewById(R.id.authContainer);
+        profileContainer = findViewById(R.id.profileContainer);
+        authTabs = findViewById(R.id.authTabs);
+        etEmail = findViewById(R.id.etEmail);
+        etPassword = findViewById(R.id.etPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        tilConfirmPassword = findViewById(R.id.tilConfirmPassword);
+        btnAuthenticate = findViewById(R.id.btnAuthenticate);
+        progressBar = findViewById(R.id.progressBar);
+
+        // Profile components
+        tvUserName = findViewById(R.id.tvUserName);
+        tvUserEmail = findViewById(R.id.tvUserEmail);
+        logoutOption = findViewById(R.id.logoutOption);
+        viewPlansOption = findViewById(R.id.viewPlans);
+        viewPlacesOption = findViewById(R.id.viewPlaces);
+
+        // Set up tab selection listener
+        authTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int position = tab.getPosition();
+                if (position == 0) { // Login
+                    btnAuthenticate.setText("LOGIN");
+                    tilConfirmPassword.setVisibility(View.GONE);
+                } else { // Register
+                    btnAuthenticate.setText("REGISTER");
+                    tilConfirmPassword.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
+        // Set up authentication button click listener
+        btnAuthenticate.setOnClickListener(v -> {
+            int selectedTab = authTabs.getSelectedTabPosition();
+            if (selectedTab == 0) {
+                loginUser();
+            } else {
+                registerUser();
+            }
+        });
+
+        // Set up Logout option click listener
+        logoutOption.setOnClickListener(v -> {
+            new AlertDialog.Builder(this) // replace 'context' with your Activity or use 'this' if inside an Activity
+                    .setTitle("Confirm Logout")
+                    .setMessage("Are you sure you want to sign out?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        signOut(); // Call your sign out method
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        dialog.dismiss(); // Dismiss the dialog if user cancels
+                    })
+                    .show();
+        });
+
+        // Set up View Plans option click listener
+        viewPlansOption.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, SeeTravelPlanActivity.class);
+            startActivity(intent);
+        });
+
+        // Set up View Places option click listener
+        viewPlacesOption.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, PlacesListActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void loginUser() {
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+
+        // Validate input fields
+        if (TextUtils.isEmpty(email)) {
+            etEmail.setError("Email is required");
+            etEmail.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(password)) {
+            etPassword.setError("Password is required");
+            etPassword.requestFocus();
+            return;
+        }
+
+        // Show progress
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Sign in with email and password
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        progressBar.setVisibility(View.GONE);
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                            Toast.makeText(ProfileActivity.this, "Login successful!",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            // If sign in fails, display a message to the user
+                            Toast.makeText(ProfileActivity.this, "Authentication failed: " +
+                                    task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+                        }
+                    }
+                });
+    }
+
+    private void registerUser() {
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+        // Validate input fields
+        if (TextUtils.isEmpty(email)) {
+            etEmail.setError("Email is required");
+            etEmail.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(password)) {
+            etPassword.setError("Password is required");
+            etPassword.requestFocus();
+            return;
+        }
+
+        if (password.length() < 6) {
+            etPassword.setError("Password must be at least 6 characters long");
+            etPassword.requestFocus();
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            etConfirmPassword.setError("Passwords do not match");
+            etConfirmPassword.requestFocus();
+            return;
+        }
+
+        // Show progress
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Create user with email and password
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        progressBar.setVisibility(View.GONE);
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                            Toast.makeText(ProfileActivity.this, "Registration successful!",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            // If sign in fails, display a message to the user
+                            Toast.makeText(ProfileActivity.this, "Registration failed: " +
+                                    task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+                        }
+                    }
+                });
+    }
+
+    private void signOut() {
+        // Firebase sign out
+        mAuth.signOut();
+        updateUI(null);
+    }
+
+    private void updateUI(FirebaseUser user) {
+        progressBar.setVisibility(View.GONE);
+
+        if (user != null) {
+            // User is signed in
+            authContainer.setVisibility(View.GONE);
+            profileContainer.setVisibility(View.VISIBLE);
+
+            // Update profile information
+            String displayName = user.getDisplayName();
+            if (TextUtils.isEmpty(displayName)) {
+                displayName = "Traveler";
+            }
+            tvUserName.setText(displayName);
+            tvUserEmail.setText(user.getEmail());
+        } else {
+            // User is signed out
+            authContainer.setVisibility(View.VISIBLE);
+            profileContainer.setVisibility(View.GONE);
+
+            // Clear form fields
+            etEmail.setText("");
+            etPassword.setText("");
+            etConfirmPassword.setText("");
+        }
     }
 
     private void setupNavigation() {
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_profile);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -85,84 +300,4 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-
-    private void setupButtonListeners() {
-        btnLogin.setOnClickListener(v -> loginUser());
-        btnLogout.setOnClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Confirm Logout")
-                    .setMessage("Are you sure you want to logout?")
-                    .setPositiveButton("Yes", (dialog, which) -> logoutUser())
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
-        btnGoToRegister.setOnClickListener(v -> {
-            startActivity(new Intent(this, RegisterActivity.class));
-        });
-        btnViewPlans.setOnClickListener(v -> {
-            startActivity(new Intent(this, CreatePlanActivity.class));
-        });
-
-        btnViewPlaces.setOnClickListener(v -> {
-            startActivity(new Intent(this, PlacesListActivity.class));
-        });
-    }
-
-    private void checkUserStatus() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        updateUI(currentUser);
-    }
-
-    private void loginUser() {
-        String email = editEmail.getText().toString().trim();
-        String password = editPassword.getText().toString().trim();
-
-        if (TextUtils.isEmpty(email)) {
-            editEmail.setError("Email cannot be empty");
-            editEmail.requestFocus();
-            return;
-        }
-
-        if (TextUtils.isEmpty(password)) {
-            editPassword.setError("Password cannot be empty");
-            editPassword.requestFocus();
-            return;
-        }
-
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        checkUserStatus();
-                        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-    }
-
-    private void logoutUser() {
-        mAuth.signOut();
-        updateUI(null);
-        Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
-    }
-
-    private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            txtWelcome.setText("Welcome Back!");
-            txtWelcome.setTextColor(ContextCompat.getColor(this, R.color.white));
-            txtLoggedIn.setText("You're logged in as: " + user.getEmail());
-            txtLoggedIn.setTextColor(ContextCompat.getColor(this, R.color.black));
-            btnLogout.setVisibility(View.VISIBLE);
-            btnLogin.setVisibility(View.GONE);
-            btnGoToRegister.setVisibility(View.GONE);
-            loginCard.setVisibility(View.GONE);
-            profileCard.setVisibility(View.VISIBLE);
-        } else {
-            btnLogout.setVisibility(View.GONE);
-            btnLogin.setVisibility(View.VISIBLE);
-            btnGoToRegister.setVisibility(View.VISIBLE);
-            loginCard.setVisibility(View.VISIBLE);
-            profileCard.setVisibility(View.GONE);
-        }
-    }
 }
