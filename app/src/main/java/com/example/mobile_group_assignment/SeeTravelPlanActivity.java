@@ -6,10 +6,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.SearchView;
+import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -26,11 +32,37 @@ public class SeeTravelPlanActivity extends AppCompatActivity {
     List<TravelPlan> planList;
     List<TravelPlan> filteredPlanList;
     ImageButton createTravelPlanButton;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_see_travel_plan);
+
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_create_plan);
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_create_plan) {
+                return true;
+            } else if (itemId == R.id.nav_create_place) {
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                if (currentUser != null) {
+                    startActivity(new Intent(this, PlacesListActivity.class));
+                } else {
+                    Toast.makeText(this, "Please login to access Create Place", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            }
+            return false;
+        });
 
         // Initialize views
         recyclerView = findViewById(R.id.recyclerViewPlans);
@@ -64,10 +96,8 @@ public class SeeTravelPlanActivity extends AppCompatActivity {
         });
 
         // Create a new travel plan
-        createTravelPlanButton.setOnClickListener(v -> {
-            Log.d("SeeTravelPlanActivity", "Create Travel Plan button clicked.");
-            Intent intent = new Intent(SeeTravelPlanActivity.this, TravelPlanCreatorActivity.class);
-            startActivityForResult(intent, 1);
+        findViewById(R.id.createTravelPlanButton).setOnClickListener(v -> {
+            startActivity(new Intent(this, TravelPlanCreatorActivity.class));
         });
 
         adapter.setOnItemClickListener(position -> {

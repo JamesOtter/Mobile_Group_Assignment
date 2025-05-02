@@ -77,7 +77,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Visitation Time"
+            android:text="Visitation Time (Recommended)"
             android:textColor="@android:color/white"
             android:layout_marginTop="16dp"/>
 
@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
             android:textColorHint="#80FFFFFF"
-            android:hint="e.g., Morning, Afternoon, Evening"
+            android:hint="e.g., 8am-6pm"
             android:backgroundTint="#1E88E5"/>
 
         <!-- Location (State) -->
@@ -108,7 +108,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Duration (minutes)"
+            android:text="Estimated Duration (minutes)"
             android:textColor="@android:color/white"
             android:layout_marginTop="16dp"/>
 

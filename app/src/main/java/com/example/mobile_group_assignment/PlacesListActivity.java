@@ -35,7 +35,7 @@ public class PlacesListActivity extends AppCompatActivity {
                 startActivity(new Intent(this, MainActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_plan) {
-                startActivity(new Intent(this, CreatePlanActivity.class));
+                startActivity(new Intent(this, SeeTravelPlanActivity.class));
                 return true;
             } else if (itemId == R.id.nav_create_place) {
                 return true;

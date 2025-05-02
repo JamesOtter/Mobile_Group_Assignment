@@ -51,12 +51,14 @@ public class ProfileActivity extends AppCompatActivity {
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
+
         // Initialize UI components
         initializeUI();
 
         // Bottom Navigation Bar setup
         setupNavigation();
     }
+
 
     @Override
     public void onStart() {
@@ -114,6 +116,7 @@ public class ProfileActivity extends AppCompatActivity {
                 registerUser();
             }
         });
+
 
         // Set up Logout option click listener
         logoutOption.setOnClickListener(v -> {
