@@ -8,22 +8,28 @@ import android.widget.ImageButton;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+
 import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
+
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonSyntaxException;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Collections;
 
 public class SeeTravelPlanActivity extends AppCompatActivity {
 
@@ -33,6 +39,7 @@ public class SeeTravelPlanActivity extends AppCompatActivity {
     List<TravelPlan> filteredPlanList;
     ImageButton createTravelPlanButton;
     private FirebaseAuth mAuth;
+    private static final int EDIT_PLAN_REQUEST = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +84,16 @@ public class SeeTravelPlanActivity extends AppCompatActivity {
         adapter = new TravelPlanAdapter(filteredPlanList);
         recyclerView.setAdapter(adapter);
 
-        // Load saved travel plans
+        setupRecyclerView();
         loadTravelPlans();
+
+        // Handle cases where data might be null
+        if (filteredPlanList == null) {
+            filteredPlanList = new ArrayList<>();
+        }
+        if (planList == null) {
+            planList = new ArrayList<>();
+        }
 
         // Search functionality to filter displayed travel plans
         SearchView searchView = findViewById(R.id.searchView);
@@ -126,8 +141,6 @@ public class SeeTravelPlanActivity extends AppCompatActivity {
             // Start the activity to show the details
             startActivity(intent);
         });
-
-
     }
 
     // Method to filter the list based on the search query
@@ -148,88 +161,290 @@ public class SeeTravelPlanActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-            String selectedState = data.getStringExtra("selectedState"); // destination
+
+        if (resultCode == RESULT_OK && data != null) {
+            String selectedState = data.getStringExtra("selectedState");
             String startDate = data.getStringExtra("startDate");
             String endDate = data.getStringExtra("endDate");
             String selectedBudget = data.getStringExtra("selectedBudget");
             String selectedCategories = data.getStringExtra("selectedCategories");
             String places = data.getStringExtra("places");
+            String dayCardsJson = data.getStringExtra("dayCards");
 
-            // Create a new travel plan object
-            TravelPlan newPlan = new TravelPlan(selectedState, startDate, endDate, selectedBudget, selectedCategories, places);
+            if (requestCode == EDIT_PLAN_REQUEST) {
+                // Handle edited plan
+                int position = data.getIntExtra("position", -1);
+                Log.d("SeeTravelPlanActivity", "Editing plan at position: " + position);
 
-            // Add the new plan to both lists
-            planList.add(newPlan);
-            filteredPlanList.add(newPlan);
+                if (position != -1) {
+                    TravelPlan updatedPlan = new TravelPlan(
+                            selectedState,
+                            startDate,
+                            endDate,
+                            selectedBudget,
+                            selectedCategories,
+                            places
+                    );
 
-            // Log to verify that the new plan is being added
-            Log.d("SeeTravelPlanActivity", "New plan added: " + newPlan.getDestination());
+                    // Update day cards if available
+                    if (dayCardsJson != null && !dayCardsJson.isEmpty()) {
+                        updatedPlan.setDayCardsFromJson(dayCardsJson);
+                    }
 
+                    // Update the original planList
+                    planList.set(position, updatedPlan);
 
-            // Notify the adapter to update the view
-            adapter.notifyDataSetChanged();
+                    // Find and update in filteredPlanList
+                    int filteredPosition = -1;
+                    for (int i = 0; i < filteredPlanList.size(); i++) {
+                        TravelPlan plan = filteredPlanList.get(i);
+                        // Compare by essential properties instead of object reference
+                        if (plan.getDestination().equals(data.getStringExtra("originalDestination")) &&
+                                plan.getStartDate().equals(data.getStringExtra("originalStartDate")) &&
+                                plan.getEndDate().equals(data.getStringExtra("originalEndDate"))) {
+                            filteredPosition = i;
+                            break;
+                        }
+                    }
+
+                    if (filteredPosition != -1) {
+                        filteredPlanList.set(filteredPosition, updatedPlan);
+                        adapter.notifyItemChanged(filteredPosition);
+                    } else {
+                        // Refresh whole list if cant find
+                        filteredPlanList.clear();
+                        filteredPlanList.addAll(planList);
+                        adapter.notifyDataSetChanged();
+                    }
+
+                    saveAllPlans();
+                    Log.d("SeeTravelPlanActivity", "Plan updated: " + updatedPlan.getDestination());
+                }
+            }
+            else if (requestCode == 1) {
+                // Handle new plan
+                TravelPlan newPlan = new TravelPlan(
+                        selectedState,
+                        startDate,
+                        endDate,
+                        selectedBudget,
+                        selectedCategories,
+                        places
+                );
+                // Add day cards if available
+                if (dayCardsJson != null && !dayCardsJson.isEmpty()) {
+                    newPlan.setDayCardsFromJson(dayCardsJson);
+                }
+
+                planList.add(newPlan);
+                filteredPlanList.add(newPlan);
+                adapter.notifyItemInserted(planList.size() - 1);
+                saveAllPlans();
+
+                Log.d("SeeTravelPlanActivity", "New plan added: " + newPlan.getDestination());
+            }
         }
     }
 
     private void loadTravelPlans() {
         SharedPreferences sharedPreferences = getSharedPreferences("TravelPlans", MODE_PRIVATE);
-
-        // Retrieve the stored JSON string for travel plans, or initialize an empty list if no plans exist
         String plansJson = sharedPreferences.getString("plans_list", "[]");
 
-        // Use Gson to deserialize the plans into a list of maps
-        List<Map<String, String>> travelPlans = new Gson().fromJson(plansJson, new TypeToken<List<Map<String, String>>>() {}.getType());
+        try {
+            Type listType = new TypeToken<List<TravelPlan>>(){}.getType();
+            List<TravelPlan> travelPlans = new Gson().fromJson(plansJson, listType);
 
-        // Check if the list of travel plans is not empty
-        if (travelPlans != null && !travelPlans.isEmpty()) {
-            // Iterate over each saved plan and create TravelPlan objects
-            for (Map<String, String> planMap : travelPlans) {
-                String selectedState = planMap.get("selectedState");
-                String startDate = planMap.get("startDate");
-                String endDate = planMap.get("endDate");
-                String budget = planMap.get("budget");
-                String travelType = planMap.get("travelType");
-                String places = planMap.get("places");
+            planList.clear();
+            filteredPlanList.clear();
 
-                // If number of days is available, get it; otherwise, set a default value
-                String numberOfDays = planMap.get("numberOfDays");
+            if (travelPlans != null) {
+                planList.addAll(travelPlans);
+                filteredPlanList.addAll(travelPlans);
+            }
+        } catch (JsonSyntaxException e) {
+            try {
+                Type legacyType = new TypeToken<List<Map<String, Object>>>(){}.getType();
+                List<Map<String, Object>> legacyPlans = new Gson().fromJson(plansJson, legacyType);
 
-                // Create a new TravelPlan object and add it to the list
-                TravelPlan travelPlan = new TravelPlan(selectedState, startDate, endDate, budget, travelType, places);
+                planList.clear();
+                filteredPlanList.clear();
 
-                // Deserialize the dayCards JSON string into the list of DayCard objects
-                String dayCardsJson = planMap.get("dayCards");
-                Log.d("SeeTravelPlanActivity", "DayCards JSON: " + dayCardsJson);  // Log the JSON string
+                if (legacyPlans != null) {
+                    for (Map<String, Object> planMap : legacyPlans) {
+                        TravelPlan travelPlan = new TravelPlan(
+                                (String) planMap.get("selectedState"),
+                                (String) planMap.get("startDate"),
+                                (String) planMap.get("endDate"),
+                                (String) planMap.get("selectedBudget"),
+                                (String) planMap.get("selectedCategories"),
+                                "" // places can be empty
+                        );
 
-                if (dayCardsJson != null && !dayCardsJson.isEmpty()) {
-                    List<DayCard> dayCards = new Gson().fromJson(dayCardsJson, new TypeToken<List<DayCard>>() {}.getType());
+                        // Handle day cards
+                        Object dayCardsObj = planMap.get("dayCards");
+                        if (dayCardsObj instanceof String) {
+                            travelPlan.setDayCardsFromJson((String) dayCardsObj);
+                        } else if (dayCardsObj instanceof List) {
+                            String dayCardsJson = new Gson().toJson(dayCardsObj);
+                            travelPlan.setDayCardsFromJson(dayCardsJson);
+                        }
 
-                    // Log the deserialized dayCards to ensure they are correctly converted
-                    if (dayCards != null) {
-                        Log.d("SeeTravelPlanActivity", "Deserialized DayCards: " + dayCards.size() + " dayCards loaded.");
-                    } else {
-                        Log.d("SeeTravelPlanActivity", "Failed to deserialize DayCards.");
+                        planList.add(travelPlan);
+                        filteredPlanList.add(travelPlan);
                     }
-
-                    travelPlan.setDayCards(dayCards != null ? dayCards : new ArrayList<>());
-                } else {
-                    Log.d("SeeTravelPlanActivity", "No dayCards data found for this plan.");
-                    travelPlan.setDayCards(new ArrayList<>());
                 }
+            } catch (Exception ex) {
+                Log.e("SeeTravelPlan", "Error loading travel plans", ex);
+                // Initialize empty lists if parsing fails
+                planList = new ArrayList<>();
+                filteredPlanList = new ArrayList<>();
+            }
+        }
 
-                planList.add(travelPlan);
-                filteredPlanList.add(travelPlan);
+        runOnUiThread(() -> {
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void openPlanDetails(TravelPlan plan) {
+        Intent intent = new Intent(this, TravelPlanDetailActivity.class);
+
+        // Pass all plan data to the detail activity
+        intent.putExtra("destination", plan.getDestination());
+        intent.putExtra("startDate", plan.getStartDate());
+        intent.putExtra("endDate", plan.getEndDate());
+        intent.putExtra("budgetRange", plan.getBudgetRange());
+        intent.putExtra("travelType", plan.getTravelType());
+
+        // Pass day cards as JSON
+        intent.putExtra("dayCards", plan.getDayCardsJson());
+
+        startActivity(intent);
+    }
+
+    private void setupRecyclerView() {
+        recyclerView = findViewById(R.id.recyclerViewPlans);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        adapter = new TravelPlanAdapter(filteredPlanList);
+        recyclerView.setAdapter(adapter);
+
+        // Set up click listener
+        adapter.setOnItemClickListener(position -> {
+            TravelPlan selectedPlan = filteredPlanList.get(position);
+            openPlanDetails(selectedPlan);
+        });
+
+        // Set up delete listener
+        adapter.setOnItemDeleteListener(position -> {
+            showDeleteConfirmationDialog(position);
+        });
+
+        // Set up edit listener
+        adapter.setOnItemEditListener(position -> {
+            editPlan(position);
+        });
+
+        // Add swipe to delete and drag to reorder functionality
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP | ItemTouchHelper.DOWN,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView,
+                                  @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+
+                // Update both filtered and original lists to maintain consistency
+                Collections.swap(filteredPlanList, fromPosition, toPosition);
+                Collections.swap(planList, planList.indexOf(filteredPlanList.get(fromPosition)),
+                        planList.indexOf(filteredPlanList.get(toPosition)));
+
+                adapter.moveItem(fromPosition, toPosition);
+                saveAllPlans();
+                return true;
             }
 
-            // Notify the adapter to update the RecyclerView
-            adapter.notifyDataSetChanged();
-        } else {
-            Log.d("SeeTravelPlanActivity", "No travel plans found in SharedPreferences.");
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                showDeleteConfirmationDialog(position);
+            }
+        });
+
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+
+    private void showDeleteConfirmationDialog(int position) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Travel Plan")
+                .setMessage("Are you sure you want to delete this travel plan?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    deletePlan(position);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    adapter.notifyItemChanged(position); // Reset the swiped item
+                })
+                .show();
+    }
+
+    private void deletePlan(int position) {
+        if (position >= 0 && position < filteredPlanList.size()) {
+            // Get the plan to be deleted
+            TravelPlan planToDelete = filteredPlanList.get(position);
+
+            // Remove from both lists
+            planList.remove(planToDelete);
+            filteredPlanList.remove(position);
+
+            // Update SharedPreferences
+            saveAllPlans();
+
+            // Notify adapter
+            adapter.notifyItemRemoved(position);
+
+            // Show confirmation
+            Toast.makeText(this, "Plan deleted", Toast.LENGTH_SHORT).show();
+
+            // Refresh the activity if no plans left
+            if (filteredPlanList.isEmpty()) {
+                recreate();
+            }
         }
     }
 
+    private void editPlan(int position) {
+        TravelPlan planToEdit = filteredPlanList.get(position);
+        Intent intent = new Intent(this, ManageTravelPlanActivity.class);
 
+        // Pass all plan data to the edit activity
+        intent.putExtra("editMode", true);
+        intent.putExtra("position", position);
+        intent.putExtra("selectedState", planToEdit.getDestination());
+        intent.putExtra("startDate", planToEdit.getStartDate());
+        intent.putExtra("endDate", planToEdit.getEndDate());
+        intent.putExtra("selectedBudget", planToEdit.getBudgetRange());
+        intent.putExtra("selectedCategories", planToEdit.getTravelType());
 
+        // Pass day cards as JSON
+        intent.putExtra("dayCards", planToEdit.getDayCardsJson());
 
+        // Also pass original values for identification
+        intent.putExtra("originalDestination", planToEdit.getDestination());
+        intent.putExtra("originalStartDate", planToEdit.getStartDate());
+        intent.putExtra("originalEndDate", planToEdit.getEndDate());
+
+        startActivityForResult(intent, EDIT_PLAN_REQUEST);
+    }
+
+    private void saveAllPlans() {
+        SharedPreferences sharedPreferences = getSharedPreferences("TravelPlans", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("plans_list", new Gson().toJson(planList));
+        editor.apply();
+    }
 }

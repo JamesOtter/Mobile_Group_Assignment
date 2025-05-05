@@ -159,6 +159,11 @@ public class TravelPlanCreatorActivity extends AppCompatActivity {
 
         // Proceed to next page
         Intent intent = new Intent(this, ManageTravelPlanActivity.class);
+        intent.putExtra("selectedState", selectedState);
+        intent.putExtra("startDate", startDate);
+        intent.putExtra("endDate", endDate);
+        intent.putExtra("selectedBudget", selectedBudget);
+        intent.putExtra("selectedCategories", selectedCategories.toString());
         startActivity(intent);
     }
 }

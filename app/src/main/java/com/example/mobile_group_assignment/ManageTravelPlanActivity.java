@@ -21,9 +21,14 @@ import com.google.gson.reflect.TypeToken;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.lang.reflect.Type;
 
 public class ManageTravelPlanActivity extends AppCompatActivity {
 
+    private static final String TAG = "ManageTravelPlan";
+
+    private boolean isEditMode = false;
+    private int editPosition = -1;
     private RecyclerView dayRecyclerView;
     private DayCardAdapter dayCardAdapter;
     private List<DayCard> dayCards;
@@ -42,38 +47,93 @@ public class ManageTravelPlanActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_managet_travel_plan);
 
+        // Initialize views
+        btnSave = findViewById(R.id.btn_save);
+        if (btnSave == null) {
+            throw new IllegalStateException("Layout must include a Button with id btn_save");
+        }
+
+        // Check if in edit mode
+        isEditMode = getIntent().getBooleanExtra("editMode", false);
+        editPosition = getIntent().getIntExtra("position", -1);
+
+        // Initialize Firestore
         firestore = FirebaseFirestore.getInstance();
         dayCards = new ArrayList<>();
 
+        // Initialize RecyclerView
         dayRecyclerView = findViewById(R.id.dayRecyclerView);
         dayRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         dayCardAdapter = new DayCardAdapter(dayCards, this);
         dayRecyclerView.setAdapter(dayCardAdapter);
 
-        btnSave = findViewById(R.id.btn_save);
+        if (isEditMode) {
+            selectedState = getIntent().getStringExtra("selectedState");
+            startDate = getIntent().getStringExtra("startDate");
+            endDate = getIntent().getStringExtra("endDate");
+            selectedBudget = getIntent().getStringExtra("selectedBudget");
+            selectedCategories = getIntent().getStringExtra("selectedCategories");
 
-        // Load Travel Plan Info from SharedPreferences
-        loadTravelPlanData();
+            Log.d(TAG, "Edit mode - Selected state: " + selectedState);
 
-        // Create day cards (Day 1, Day 2, etc.) based on start and end date
-        createDayCards();
+            // Load day cards from JSON
+            String dayCardsJson = getIntent().getStringExtra("dayCards");
+            if (dayCardsJson != null && !dayCardsJson.isEmpty()) {
+                Type type = new TypeToken<List<DayCard>>(){}.getType();
+                List<DayCard> existingDayCards = new Gson().fromJson(dayCardsJson, type);
+                if (existingDayCards != null) {
+                    dayCards.addAll(existingDayCards);
+                    dayCardAdapter.notifyDataSetChanged();
+                }
+            }
+        } else {
+            // Load from SharedPreferences for create mode
+            loadTravelPlanData();
+            Log.d(TAG, "Create mode - Selected state: " + selectedState);
+            createDayCards();
+        }
 
-        // Save Button clicked
-        btnSave.setOnClickListener(v -> {
-            saveTravelPlanData();
-            Intent intent = new Intent(ManageTravelPlanActivity.this, SeeTravelPlanActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        });
+        // Set up save button
+        btnSave.setOnClickListener(v -> saveTravelPlanData());
     }
 
     private void loadTravelPlanData() {
-        SharedPreferences sharedPreferences = getSharedPreferences("TravelPlan", MODE_PRIVATE);
-        selectedState = sharedPreferences.getString("selectedState", "");
-        startDate = sharedPreferences.getString("startDate", "");
-        endDate = sharedPreferences.getString("endDate", "");
-        selectedBudget = sharedPreferences.getString("selectedBudget", "");
-        selectedCategories = sharedPreferences.getString("selectedCategories", "");
+        Intent intent = getIntent();
+        if (intent.hasExtra("selectedState")) {
+            selectedState = intent.getStringExtra("selectedState");
+            startDate = intent.getStringExtra("startDate");
+            endDate = intent.getStringExtra("endDate");
+            selectedBudget = intent.getStringExtra("selectedBudget");
+            selectedCategories = intent.getStringExtra("selectedCategories");
+
+            Log.d(TAG, "Loaded state from Intent: " + selectedState);
+        } else {
+            SharedPreferences sharedPreferences = getSharedPreferences("TravelPlan", MODE_PRIVATE);
+            selectedState = sharedPreferences.getString("selectedState", "");
+            startDate = sharedPreferences.getString("startDate", "");
+            endDate = sharedPreferences.getString("endDate", "");
+            selectedBudget = sharedPreferences.getString("selectedBudget", "");
+            selectedCategories = sharedPreferences.getString("selectedCategories", "");
+
+            Log.d(TAG, "Loaded state from SharedPreferences: " + selectedState);
+        }
+
+        // Extra validation to ensure we have data
+        if (selectedState == null || selectedState.isEmpty()) {
+            Log.e(TAG, "No state was loaded from either Intent or SharedPreferences!");
+            Toast.makeText(this, "Error: Failed to load destination information", Toast.LENGTH_LONG).show();
+            finish(); // Close this activity as we can't proceed
+            return;
+        }
+
+        // Make sure SharedPreferences is also updated with current values
+        SharedPreferences.Editor editor = getSharedPreferences("TravelPlan", MODE_PRIVATE).edit();
+        editor.putString("selectedState", selectedState);
+        editor.putString("startDate", startDate);
+        editor.putString("endDate", endDate);
+        editor.putString("selectedBudget", selectedBudget);
+        editor.putString("selectedCategories", selectedCategories);
+        editor.apply();
     }
 
     private void createDayCards() {
@@ -99,106 +159,125 @@ public class ManageTravelPlanActivity extends AppCompatActivity {
 
     private void saveTravelPlanData() {
         SharedPreferences sharedPreferences = getSharedPreferences("TravelPlans", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        // Retrieve the existing list of saved plans, or initialize a new one if none exists
         String plansJson = sharedPreferences.getString("plans_list", "[]");
-        List<Map<String, String>> travelPlans = new Gson().fromJson(plansJson, new TypeToken<List<Map<String, String>>>() {}.getType());
 
-        // Create a new map to store the current travel plan
-        Map<String, String> currentPlan = new HashMap<>();
-        currentPlan.put("selectedState", selectedState);
-        currentPlan.put("startDate", startDate);
-        currentPlan.put("endDate", endDate);
-        currentPlan.put("budget", selectedBudget);
-        currentPlan.put("travelType", selectedCategories);
+        Type type = new TypeToken<List<TravelPlan>>(){}.getType();
+        List<TravelPlan> travelPlans = new Gson().fromJson(plansJson, type);
+        if (travelPlans == null) travelPlans = new ArrayList<>();
 
-        // Calculate the number of days for the current plan
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        try {
-            Date start = sdf.parse(startDate);
-            Date end = sdf.parse(endDate);
-
-            if (start != null && end != null) {
-                long diffInMillies = Math.abs(end.getTime() - start.getTime());
-                long diffDays = (diffInMillies / (1000 * 60 * 60 * 24)) + 1;
-                currentPlan.put("numberOfDays", String.valueOf(diffDays));
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        // Collect all selected places and add them to the current plan
+        // Collect all selected places from all day cards
         List<String> allSelectedPlaces = new ArrayList<>();
         for (DayCard dayCard : dayCards) {
-            List<String> selectedPlaces = dayCard.getSelectedPlaces();
-            if (selectedPlaces != null && !selectedPlaces.isEmpty()) {
-                allSelectedPlaces.addAll(selectedPlaces);
+            if (dayCard.getSelectedPlaces() != null) {
+                allSelectedPlaces.addAll(dayCard.getSelectedPlaces());
             }
         }
 
-        if (!allSelectedPlaces.isEmpty()) {
-            String places = TextUtils.join(", ", allSelectedPlaces);
-            currentPlan.put("places", places);
-            Log.d("SaveTravelPlan", "Updated places saved: " + places);
+        TravelPlan newPlan = new TravelPlan(
+                selectedState,
+                startDate,
+                endDate,
+                selectedBudget,
+                selectedCategories,
+                allSelectedPlaces,
+                dayCards
+        );
+
+        if (isEditMode && editPosition != -1) {
+            // Update existing plan
+            travelPlans.set(editPosition, newPlan);
         } else {
-            currentPlan.remove("places");  // If no places selected, remove the key
+            // Add new plan
+            travelPlans.add(newPlan);
         }
 
-        // 1. Serialize the DayCard objects to JSON
-        String dayCardsJson = new Gson().toJson(dayCards);
-
-        // 2. Save the dayCards JSON inside the current plan
-        currentPlan.put("dayCards", dayCardsJson);
-
-        // 3. Log to verify
-        Log.d("SaveTravelPlan", "Serialized DayCards: " + dayCardsJson);
-
-        // 4. Add the current plan to the list of travel plans
-        travelPlans.add(currentPlan);
-
-        // 5. Serialize the entire updated travel plans list
-        String updatedPlansJson = new Gson().toJson(travelPlans);
-
-        // 6. Save the updated plans list into SharedPreferences
-        editor.putString("plans_list", updatedPlansJson);
-
-        // 7. Apply all changes
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("plans_list", new Gson().toJson(travelPlans));
         editor.apply();
 
+        // Create result intent
+        Intent resultIntent = new Intent();
+        if (isEditMode) {
+            resultIntent.putExtra("position", editPosition);
+            resultIntent.putExtra("originalDestination", getIntent().getStringExtra("destination"));
+            resultIntent.putExtra("originalStartDate", getIntent().getStringExtra("startDate"));
+            resultIntent.putExtra("originalEndDate", getIntent().getStringExtra("endDate"));
+        }
 
-        // Show a confirmation message
-        Toast.makeText(this, "Travel plan saved successfully!", Toast.LENGTH_SHORT).show();
+        resultIntent.putExtra("selectedState", selectedState);
+        resultIntent.putExtra("startDate", startDate);
+        resultIntent.putExtra("endDate", endDate);
+        resultIntent.putExtra("selectedBudget", selectedBudget);
+        resultIntent.putExtra("selectedCategories", selectedCategories);
+        resultIntent.putExtra("dayCards", newPlan.getDayCardsJson());
+        resultIntent.putExtra("places", TextUtils.join(", ", allSelectedPlaces));
+
+        setResult(RESULT_OK, resultIntent);
+
+        if (!isEditMode) {
+            // For new plans, go back to home directly
+            Intent homeIntent = new Intent(this, MainActivity.class);  // Replace MainActivity with your home activity name
+            homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(homeIntent);
+        }
+
+        finish();
+
+        Toast.makeText(this,
+                isEditMode ? "Plan updated" : "Plan saved",
+                Toast.LENGTH_SHORT).show();
     }
-
 
     // Called when user clicks on a day card to select places
     public void openPlaceSelectionDialog(final int dayPosition) {
         List<String> placesNameList = new ArrayList<>();
         List<String> placesImageUrlList = new ArrayList<>();
 
+        // Debug
+        Log.d(TAG, "Querying Firestore for places in state: " + selectedState);
+
+        if (selectedState == null || selectedState.isEmpty()) {
+            Log.e(TAG, "Selected state is null or empty!");
+            Toast.makeText(this, "Error: No state selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         firestore.collection("places")
-                .whereEqualTo("location", selectedState)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    boolean foundPlaces = false;
+
+                    // Log the number of documents found
+                    Log.d(TAG, "Total documents in 'places' collection: " + queryDocumentSnapshots.size());
+
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String name = document.getString("name");
-                        String imageUrl = document.getString("photoUrl");
-                        if (name != null && imageUrl != null) {
-                            placesNameList.add(name);
-                            placesImageUrlList.add(imageUrl);
+                        String location = document.getString("location");
+
+                        // Debug Log each document's location
+                        Log.d(TAG, "Document location: " + location);
+
+                        // Check if location matches our state
+                        if (location != null && location.equalsIgnoreCase(selectedState)) {
+                            String name = document.getString("name");
+                            String imageUrl = document.getString("photoUrl");
+                            if (name != null && imageUrl != null) {
+                                placesNameList.add(name);
+                                placesImageUrlList.add(imageUrl);
+                                foundPlaces = true;
+                            }
                         }
                     }
 
-                    if (!placesNameList.isEmpty()) {
+                    if (foundPlaces) {
                         showPlacesSelectionDialog(dayPosition, placesNameList, placesImageUrlList);
                     } else {
+                        Log.w(TAG, "No places found for state: " + selectedState);
                         showNoPlacesFoundDialog();
                     }
                 })
                 .addOnFailureListener(e -> {
-                    e.printStackTrace();
-                    Toast.makeText(this, "Failed to load places!", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Failed to query Firestore", e);
+                    Toast.makeText(this, "Failed to load places: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -209,7 +288,6 @@ public class ManageTravelPlanActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select Places for " + dayCards.get(dayPosition).getTitle());
         builder.setMultiChoiceItems(placesArray, checkedItems, (dialog, which, isChecked) -> {
-            // Do nothing on real-time selection
         });
 
         builder.setPositiveButton("OK", (dialog, which) -> {

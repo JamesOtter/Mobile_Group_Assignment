@@ -28,6 +28,9 @@
             android:name=".PlacesListActivity"
             android:exported="false" />
         <activity
+            android:name=".PlacesDetailActivity"
+            android:exported="false"/>
+        <activity
             android:name=".EditPlaceActivity"
             android:exported="false" />
         <activity

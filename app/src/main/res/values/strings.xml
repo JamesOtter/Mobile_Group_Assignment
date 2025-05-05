@@ -30,6 +30,10 @@
         <item>Labuan</item>
         <item>Putrajaya</item>
     </string-array>
+
+    <string name="edit_plan">Edit Plan</string>
+    <string name="delete_plan">Delete Plan</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

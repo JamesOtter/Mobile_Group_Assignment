@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,28 +9,124 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottom_navigation" >
+        android:layout_above="@id/bottom_navigation">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:background="#FAFAFA">
 
-            <TextView
-                android:id="@+id/home_title"
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Home"
-                android:textSize="24sp" />
+                android:paddingBottom="16dp">
 
-            <Button
-                android:id="@+id/listBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Go to Places List" />
+                <!-- Places Section -->
+                <TextView
+                    android:id="@+id/placesTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:text="Places"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent" />
 
-        </LinearLayout>
+                <ImageView
+                    android:id="@+id/placesArrow"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@android:drawable/ic_media_play"
+                    android:rotation="90"
+                    app:layout_constraintBottom_toBottomOf="@+id/placesTitle"
+                    app:layout_constraintStart_toEndOf="@+id/placesTitle"
+                    app:layout_constraintTop_toTopOf="@+id/placesTitle" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/placesRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/placesTitle"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_place_display" />
+
+                <!-- Travel Plans Section -->
+                <TextView
+                    android:id="@+id/travelingPlanTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    android:text="Traveling Plan"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/placesRecyclerView" />
+
+                <ImageView
+                    android:id="@+id/planArrow"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@android:drawable/ic_media_play"
+                    android:rotation="90"
+                    app:layout_constraintBottom_toBottomOf="@+id/travelingPlanTitle"
+                    app:layout_constraintStart_toEndOf="@+id/travelingPlanTitle"
+                    app:layout_constraintTop_toTopOf="@+id/travelingPlanTitle" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/planRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/travelingPlanTitle"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_travel_plan" />
+
+                <TextView
+                    android:id="@+id/emptyPlansView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No travel plans yet. Create one!"
+                    android:textAlignment="center"
+                    android:padding="16dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/travelingPlanTitle"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <Button
+                    android:id="@+id/btnCreatePlan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create Plan"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/emptyPlansView"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
