@@ -20,6 +20,22 @@ public class PlacesFirestoreHelper {
         auth = FirebaseAuth.getInstance();
     }
 
+    // Method to get all existing places
+    public Query getAllPlaces() {
+        return placesCollection.orderBy("name", Query.Direction.ASCENDING);
+    }
+
+    public FirestoreRecyclerOptions<Place> getAllPlacesOptions() {
+        Query query = getAllPlaces();
+        return new FirestoreRecyclerOptions.Builder<Place>()
+                .setQuery(query, snapshot -> {
+                    Place place = snapshot.toObject(Place.class);
+                    place.setDocumentId(snapshot.getId());
+                    return place;
+                })
+                .build();
+    }
+
     // Method to get all places created by current user
     public Query getPlacesByUser() {
         FirebaseUser user = auth.getCurrentUser();

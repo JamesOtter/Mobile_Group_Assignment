@@ -16,6 +16,8 @@ public class TravelPlanDetailActivity extends AppCompatActivity {
     private TextView textDestination, textStartDate, textEndDate, textBudgetRange, textTravelType, textPlaces;
     private RecyclerView recyclerViewDayCards;
     private DayCardAdapter dayCardAdapter;
+    private List<DayCard> dayCards;
+    private int positionInParentList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
